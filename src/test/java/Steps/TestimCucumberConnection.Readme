@@ -1,0 +1,132 @@
+Testim-Cucumber Integration
+
+    link a Testim Test with a Cucumber Scenario
+
+=====================
+Setup
+=====================
+
+    Include the class "TestimCucumberConnection.java" in your project in the same folder as your currently defined Steps.
+
+    In the TestimCucumberConnection.java's constructor you will need to set your Testim Token and Project.
+        See Testim=>Project Properties=>CLI for token and project values.
+
+        Edit the MyConfiguration file and add your
+
+        1. token
+        2. Project
+        3. config file path
+
+    public TestimCucumberConnection() {
+        this.token = "<<Your Testim Token>>";
+        this.project = "<<Your Testim Project ID>>";
+        this.gridName = "TESTIM-GRID";
+        this.runMode = "selenium";
+        this.baseUrl = null;
+        this.reportFile = null;
+        this.resultLabel = null;
+        this.resultUrl = null;
+    }
+
+=====================
+Automating a Scenario
+=====================
+
+    The following @Then clauses are available to run and process results:
+
+        Then Testim Run Testcase (String "<<name of test>>")
+        Then Testim Run Testcase (Integer <iteration>) (String "<<name of test>>")
+
+        Then Testim Run Results Process
+
+    Replace <<name of test>> with the name of the Testim TestCase.  You can use the name of the Scenario as the test name.
+
+    If there is any test data it will need to be added to the "Testim Run Testcase" step just as for any step that uses data.
+
+        For example,
+
+        Given the following scenario:
+
+          Scenario: Login with correct username and password
+            Given I navigate to the login page of the application
+            And I enter the following for Login
+              | username | password  |
+              | John     | whatever  |
+              | nicole   | whatever  |
+              | aaron    | whatever3 |
+            And I click the login button
+            And i do something else
+            Then I should see the UserForm page
+
+        Create a testcase in Testim called "Login with correct username and password" that automates this scenario
+
+        Update the Scenario by adding the step "Then Testim Run Testcase" with the test data to be used:
+
+              Scenario: Login with correct username and password
+                Given I navigate to the login page of the application
+                And I enter the following for Login
+                  | username | password  |
+                  | John     | whatever  |
+                  | nicole   | whatever  |
+                  | aaron    | whatever3 |
+                And I click the login button
+                And i do something else
+                Then I should see the UserForm page
+
+                Then Testim Run Testcase (String "Login with correct username and password")
+                  | username | password  |
+                  | John     | whatever  |
+                  | nicole   | whatever  |
+                  | aaron    | whatever3 |
+
+        Add Then Testim Run Results Process after the 'Then Testim Run Testcase'
+
+        Run the scenario and your Testim test should execute with the provided data.
+
+        Bob's your uncle.
+
+Automating a Scenario Outline
+
+    Add the following @Then clauses to your Scenario Outline:
+
+        Then Testim Run Testcase (Integer <iteration>) (String "<<name of test>>")
+
+    Replace <<name of test>> with the name of the Testim TestCase.  You can use the name of the Scenario as the test name.
+
+    If there is any test data it will need to be added to the "Testim Run Testcase" step just as for any step that uses data.
+
+    Modify the test data passed to the step to include a leading column called "iteration"
+    Scenario Outline will loop the Examples data row by row, so we need to tell "Then Testim Run Testcase" which iteration it is on.
+
+        For example,
+
+        Given the following Scenario Outline:
+
+          Scenario Outline: Login with correct username and password using Scenario outline
+            Given I navigate to the login page of the application
+            And I enter <username> and <password>
+            And I click the login button
+            Then I should see the UserForm page
+
+        Create a testcase in Testim called "Login with correct username and password" that automates this scenario
+
+        Update the Scenario Outline by adding the step "Then Testim Run Testcase" with the test data to be used:
+
+          Scenario Outline: Login with correct username and password using Scenario outline
+            Given I navigate to the login page of the application
+            And I enter <username> and <password>
+            And I click the login button
+            Then I should see the UserForm page
+
+            Then Testim Run Testcase (Integer <iteration>) (String "Login with correct username and password using Scenario outline")
+              | iteration | username | password |
+              | 1         | nicole   | npass    |
+              | 2         | barbara  | bpass    |
+              | 3         | aaron    | apass    |
+
+            Examples:
+              | iteration | username | password |
+              | 1         | nicole   | npass    |
+              | 2         | barbara  | bpass    |
+              | 3         | aaron    | apass    |
+
